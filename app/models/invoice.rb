@@ -5,4 +5,9 @@ class Invoice < ApplicationRecord
   has_many :transactions, dependent: :destroy
 
   validates :status, inclusion: { in: ["shipped", "packaged", "returned"] }
+
+  def self.coupon_count(coupon_id)
+    where("coupon_id = ?", coupon_id).count
+  end
+
 end

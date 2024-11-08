@@ -31,10 +31,10 @@ Rails.application.routes.draw do
   end
 
 post "/api/v1/coupons", to: "api/v1/merchants/coupons#create"
-get "/api/v1/coupons/:id", to: "api/v1/merchants/coupons#show"
+get "/api/v1/coupons/:id", to: "api/v1/coupons#show"
  get "/api/v1/merchants/:merchant_id/coupons", to: "api/v1/merchants/coupons#index"
- patch "/api/v1/coupons/:id/deactivate", to: "api/v1/merchants/coupons#deactivate"
-  patch "/api/v1/coupons/:id/activate", to: "api/v1/merchants/coupons#activate"
+ patch "/api/v1/coupons/:id/deactivate", to: "api/v1/coupons#deactivate"
+  patch "/api/v1/coupons/:id/activate", to: "api/v1/coupons#activate"
   #get "/api/v1/merchants/:merchant_id/invoices", to: "api/v1/merchants_invoices#index"
 
 

@@ -3,6 +3,7 @@ class Merchant < ApplicationRecord
   has_many :items, dependent: :destroy
   has_many :invoices, dependent: :destroy
   has_many :customers, through: :invoices
+  has_many :coupons, dependent: :destroy
   # has_many :invoice_items, through: :invoices
   # has_many :transactions, through: :invoices
 
@@ -33,6 +34,10 @@ class Merchant < ApplicationRecord
 
   def invoices_filtered_by_status(status)
     invoices.where(status: status)
+  end
+
+  def coupons_filtered_by_active(active)
+    coupons.where(active: active)
   end
 
   def self.find_all_by_name(name)

@@ -4,7 +4,7 @@ RSpec.describe "Merchant invoices endpoints" do
   before :each do
     @merchant2 = Merchant.create!(name: "Merchant")
     @merchant1 = Merchant.create!(name: "Merchant Again")
-
+ 
     @customer1 = Customer.create!(first_name: "Papa", last_name: "Gino")
     @customer2 = Customer.create!(first_name: "Jimmy", last_name: "John")
 
@@ -13,6 +13,7 @@ RSpec.describe "Merchant invoices endpoints" do
     Invoice.create!(customer: @customer1, merchant: @merchant1, status: "shipped")
     Invoice.create!(customer: @customer1, merchant: @merchant1, status: "shipped")
     @invoice2 = Invoice.create!(customer: @customer1, merchant: @merchant2, status: "shipped")
+
   end
 
   it "should return all invoices for a given merchant based on status param" do
@@ -58,4 +59,21 @@ RSpec.describe "Merchant invoices endpoints" do
     expect(json[:errors]).to be_a Array
     expect(json[:errors].first).to eq("Couldn't find Merchant with 'id'=100000")
   end
+  it "can return invoices with coupon_id field" do
+    merchant = Merchant.create!(name: "Merchant Invoices")
+    coupon = FactoryBot.create(:coupon, active:true, merchant_id: merchant.id)
+    invoice_factory = FactoryBot.create_list(:invoice, 2,merchant: merchant)
+    invoice_coupon = Invoice.create!(customer_id: (@customer1.id), merchant_id: merchant.id, status: "shipped", coupon_id: coupon.id)
+
+    get "/api/v1/merchants/#{merchant.id}/invoices"
+
+    invoices = JSON.parse(response.body, symbolize_names: true)
+    #binding.pry
+    expect(response).to be_successful
+    expect(invoices[:data][0][:attributes][:coupon_id]).to eq(nil)
+    expect(invoices[:data][1][:attributes][:coupon_id]).to eq(nil)
+    expect(invoices[:data][2][:attributes][:coupon_id]).to eq(coupon.id)
+  end
+
+
 end

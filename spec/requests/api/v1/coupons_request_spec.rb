@@ -168,6 +168,18 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             expect(json_response[:errors]).to eq("Cannot deactivate a coupon that's attached to invoices")
         end
 
+        it "cannot deactivate a coupon that doesn't exist" do
+
+            patch "/api/v1/coupons/99999/deactivate"
+
+            json_response = JSON.parse(response.body, symbolize_names: true)
+
+            #binding.pry
+            expect(response.status).to eq(404)
+            expect(json_response[:message]).to eq("Your query could not be completed")
+            expect(json_response[:errors]).to eq(["Couldn't find Coupon with 'id'=99999"])
+        end
+
         it "can activate a coupon" do
             coupon_test = FactoryBot.create(:coupon, active: false, merchant_id: @merchant_1.id)
 
@@ -184,6 +196,26 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             coupons = FactoryBot.create_list(:coupon, 4, active: true, merchant_id: @merchant_1.id)
             coupon_test = FactoryBot.create(:coupon, active: false, merchant_id: @merchant_1.id)
 
+            patch "/api/v1/coupons/#{coupon_test.id}/activate"
+
+            json_response = JSON.parse(response.body, symbolize_names: true)
+
+            #binding.pry
+            expect(response.status).to eq(422)
+            expect(json_response[:message]).to eq("Your query could not be completed")
+            expect(json_response[:errors]).to eq(["Validation failed: Only 5 coupons can be active for one merchant"])
+        end
+
+        it "cannot activate a coupon that doesn't exist" do
+
+            patch "/api/v1/coupons/99999/activate"
+
+            json_response = JSON.parse(response.body, symbolize_names: true)
+
+            #binding.pry
+            expect(response.status).to eq(404)
+            expect(json_response[:message]).to eq("Your query could not be completed")
+            expect(json_response[:errors]).to eq(["Couldn't find Coupon with 'id'=99999"])
         end
     end
 end

@@ -161,7 +161,6 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             patch "/api/v1/coupons/#{@coupon_1.id}/deactivate"
 
             json_response = JSON.parse(response.body, symbolize_names: true)
-
             #binding.pry
             expect(response.status).to eq(400)
             expect(json_response[:message]).to eq("Your query could not be completed")

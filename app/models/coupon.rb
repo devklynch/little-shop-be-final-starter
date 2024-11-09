@@ -16,7 +16,7 @@ class Coupon < ApplicationRecord
         end
     end
 
-    def check_current_invoices
-        coupon.times_used
-    end
+    # def check_current_invoices
+    #     coupon.times_used
+    # end
 end

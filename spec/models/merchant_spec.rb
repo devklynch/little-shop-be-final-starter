@@ -91,5 +91,20 @@ describe Merchant, type: :model do
       expect(merchant.invoices_filtered_by_status("returned")).to eq([inv_5_returned])
       expect(other_merchant.invoices_filtered_by_status("packaged")).to eq([inv_4_packaged])
     end
+
+    it "can filter by coupons active status" do
+      merchant1 = create(:merchant)
+      merchant2 = create(:merchant)
+      coupon1 = create(:coupon, active: true, merchant_id: merchant1.id)
+      coupon2 = create(:coupon, active: true, merchant_id: merchant1.id)
+      coupon3 = create(:coupon, active: true, merchant_id: merchant2.id)
+      coupon4 = create(:coupon, active: false, merchant_id: merchant2.id)
+
+      expect(merchant1.coupons_filtered_by_active(true).count).to eq(2)
+      expect(merchant1.coupons_filtered_by_active(false).count).to eq(0)
+      expect(merchant2.coupons_filtered_by_active(true).count).to eq(1)
+      expect(merchant1.coupons_filtered_by_active(false).count).to eq(0)
+
+    end
   end
 end

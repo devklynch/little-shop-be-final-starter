@@ -2,13 +2,14 @@ require "rails_helper"
 
 RSpec.describe "Merchant coupons endpoints" do
     before :each do
-        @merchant_2 = Merchant.create!(name: "Merchant")
-        @merchant_1 = Merchant.create!(name: "Merchant Again")
-        @merchant_3 = Merchant.create!(name: "Merchant Three")
+        @merchant_2 = FactoryBot.create(:merchant)
+        @merchant_1 = FactoryBot.create(:merchant)
+        @merchant_3 = FactoryBot.create(:merchant)
+      
+        @coupon_1 = FactoryBot.create(:coupon, merchant_id: @merchant_1.id)
+        @coupon_2 = FactoryBot.create(:coupon, merchant_id: @merchant_2.id)
+        @coupon_3 = FactoryBot.create(:coupon, merchant_id: @merchant_2.id)
 
-        @coupon_1 = Coupon.create!(name: "Coupon 1", discount: 10, active: true, percent_discount: false, merchant_id: @merchant_1.id)
-        @coupon_2 = Coupon.create!(name: "Coupon 2", discount: 5, active: true, percent_discount: true, merchant_id: @merchant_2.id)
-        @coupon_3 = Coupon.create!(name: "Coupon 3", discount: 32.5, active: false, percent_discount: true, merchant_id: @merchant_2.id)
     end
 
     describe "Get a merchant's coupons" do
@@ -27,7 +28,7 @@ RSpec.describe "Merchant coupons endpoints" do
             get "/api/v1/merchants/#{@merchant_3.id}/coupons"
 
             coupons = JSON.parse(response.body, symbolize_names: true)
-           
+          
             expect(response.status).to eq(200)
             expect(coupons[:data]).to eq([])
         end

@@ -22,7 +22,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             get "/api/v1/coupons/#{@coupon_1.id}"
 
             coupon = JSON.parse(response.body, symbolize_names: true)
-
+            
             expect(response.status).to eq(200)
             expect(coupon).to have_key(:data)
 
@@ -46,11 +46,34 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             get "/api/v1/coupons/9999"
 
             json_response = JSON.parse(response.body, symbolize_names: true)
-   
+           
             expect(response).to have_http_status(:not_found)
             expect(json_response[:message]).to eq("Your query could not be completed")
             expect(json_response[:errors]).to eq(["Couldn't find Coupon with 'id'=9999"])
         end
+    end
 
+    describe "Change coupon active status" do
+        it "can deactivate a coupon if it has no invoices" do
+            patch "/api/v1/coupons/#{@coupon_2.id}/deactivate"
+
+            coupon = JSON.parse(response.body, symbolize_names: true)
+            #binding.pry
+            expect(response.status).to eq(200)
+            expect(coupon[:data][:id]).to eq(@coupon_2.id.to_s)
+            expect(coupon[:data][:attributes][:active]).to eq(false)
+            
+
+        end
+        it "cannot deactive a coupon if tied to invoices" do
+            patch "/api/v1/coupons/#{@coupon_1.id}/deactivate"
+
+            json_response = JSON.parse(response.body, symbolize_names: true)
+
+            #binding.pry
+            expect(response.status).to eq(400)
+            expect(json_response[:message]).to eq("Your query could not be completed")
+            expect(json_response[:errors]).to eq("Cannot deactivate a coupon that's attached to invoices")
+        end
     end
 end

@@ -36,7 +36,7 @@ class Api::V1::CouponsController < ApplicationController
     private
 
     def coupon_params
-      params.permit(:name, :discount, :active, :percent_discount, :merchant_id)
+      params.permit(:name, :discount, :active, :percent_discount, :description, :merchant_id)
     end
 
     # def check_invoices

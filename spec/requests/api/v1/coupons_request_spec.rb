@@ -8,8 +8,8 @@ RSpec.describe "Coupon endpoints" , :type => :request do
         @customer1 = Customer.create!(first_name: "Papa", last_name: "Gino")
         @customer2 = Customer.create!(first_name: "Jimmy", last_name: "John")
 
-        @coupon_1 = Coupon.create!(name: "Coupon 1", discount: 10, active: true, percent_discount: false, merchant_id: @merchant_1.id)
-        @coupon_2 = Coupon.create!(name: "Coupon 2", discount: 5, active: true, percent_discount: true, merchant_id: @merchant_2.id)
+        @coupon_1 = Coupon.create!(name: "Coupon 1", discount: 10, active: true, percent_discount: false, description: "Text text text", merchant_id: @merchant_1.id)
+        @coupon_2 = Coupon.create!(name: "Coupon 2", discount: 5, active: true, percent_discount: true, description: "Text text text",  merchant_id: @merchant_2.id)
 
         @invoice1 = Invoice.create!(customer_id: (@customer1.id), merchant_id: @merchant_1.id, status: "shipped", coupon_id: @coupon_1.id)
        #@invoice2 = Invoice.create!(customer: @customer1.id, merchant: @merchant2.id, status: "shipped",coupon_id: coupon_1.id)
@@ -37,6 +37,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             expect(coupon[:data][:attributes][:discount]).to eq(@coupon_1.discount)
             expect(coupon[:data][:attributes][:active]).to eq(@coupon_1.active)
             expect(coupon[:data][:attributes][:percent_discount]).to eq(@coupon_1.percent_discount)
+            expect(coupon[:data][:attributes][:description]).to eq(@coupon_1.description)
             expect(coupon[:data][:attributes][:merchant_id]).to eq(@coupon_1.merchant_id)
             expect(coupon[:data][:attributes][:times_used]).to eq(1)
         end
@@ -59,6 +60,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             discount = 10
             active = true
             percent_discount = false
+            description = "10 off your order"
             merchant_id = @merchant_1.id
 
             body = {
@@ -66,6 +68,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
                 discount: discount,
                 active: active,
                 percent_discount: percent_discount,
+                description: description,
                 merchant_id: merchant_id
             }
 
@@ -85,6 +88,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             discount = 10
             active = true
             percent_discount = false
+            description = "10 off your order"
             merchant_id = @merchant_2.id
 
             body = {
@@ -92,6 +96,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
                 discount: discount,
                 active: active,
                 percent_discount: percent_discount,
+                description: description,
                 merchant_id: merchant_id
             }
 
@@ -105,12 +110,14 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             name = "Coupon Test"
             active = true
             percent_discount = false
+            description = "10 off your order"
             merchant_id = @merchant_2.id
 
             body = {
                 name: name,
                 active: active,
                 percent_discount: percent_discount,
+                description: description,
                 merchant_id: merchant_id
             }
 
@@ -127,6 +134,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             discount = 5
             active = true
             percent_discount = true
+            description = "10 off your order"
             merchant_id = @merchant_1.id
 
             body = {
@@ -134,6 +142,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
                 discount: discount,
                 active: active,
                 percent_discount: percent_discount,
+                description: description,
                 merchant_id: merchant_id
             }
             post "/api/v1/coupons", params: body, as: :json

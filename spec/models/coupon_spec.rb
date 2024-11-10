@@ -20,7 +20,7 @@ describe Coupon, type: :model do
         @coupon = FactoryBot.create(:coupon, active: true, merchant_id: @merchant1.id)
         coupons = FactoryBot.create_list(:coupon, 4, active: true, merchant_id: @merchant1.id)
         customer1 = Customer.create!(first_name: "Papa", last_name: "Gino")
-        invoice_coupon1 = Invoice.create!(customer_id: (customer1.id), merchant_id: @merchant1.id, status: "shipped", coupon_id: @coupon.id)
+        invoice_coupon1 = Invoice.create!(customer_id: (customer1.id), merchant_id: @merchant1.id, status: "packaged", coupon_id: @coupon.id)
         invoice_coupon2 = Invoice.create!(customer_id: (customer1.id), merchant_id: @merchant1.id, status: "shipped", coupon_id: @coupon.id)
     end
 
@@ -29,6 +29,10 @@ describe Coupon, type: :model do
     
         expect(coupon).not_to be_valid
         expect(coupon.errors[:base]).to include("Only 5 coupons can be active for one merchant")
+    end
+
+    it "can check how many invoices are associated with a packaged invoice" do
+        expect(Coupon.check_current_invoices(@coupon.id)).to eq(1)
     end
   end
 end

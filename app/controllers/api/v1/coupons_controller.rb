@@ -24,7 +24,9 @@ class Api::V1::CouponsController < ApplicationController
               }
             
         coupon = Coupon.find(params[:id])
-        if Invoice.coupon_count(coupon.id) > 0
+        coupon_id =coupon.id
+        #binding.pry
+        if Coupon.check_current_invoices(coupon_id) > 0
             render json: invoice_error, status: :bad_request
            
         else

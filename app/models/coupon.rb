@@ -6,7 +6,8 @@ class Coupon < ApplicationRecord
     validates :description, presence: true
     validates :merchant_id, presence: true
     belongs_to :merchant
-    belongs_to :invoice, optional: true
+    #belongs_to :invoice, optional: true
+    has_many :invoices
 
     validate :merchant_coupon_limit, on: :create
     validate :merchant_coupon_limit, if: -> {active_changed? && active?}
@@ -17,7 +18,7 @@ class Coupon < ApplicationRecord
         end
     end
 
-    # def check_current_invoices
-    #     coupon.times_used
-    # end
+    def self.check_current_invoices(coupon_id)
+        joins(:invoices).where("coupon_id = ? AND status = ?", coupon_id,"packaged").count
+    end
 end

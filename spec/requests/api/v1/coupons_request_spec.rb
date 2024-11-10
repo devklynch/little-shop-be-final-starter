@@ -11,7 +11,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
         @coupon_1 = Coupon.create!(name: "Coupon 1", discount: 10, active: true, percent_discount: false, description: "Text text text", merchant_id: @merchant_1.id)
         @coupon_2 = Coupon.create!(name: "Coupon 2", discount: 5, active: true, percent_discount: true, description: "Text text text",  merchant_id: @merchant_2.id)
 
-        @invoice1 = Invoice.create!(customer_id: (@customer1.id), merchant_id: @merchant_1.id, status: "shipped", coupon_id: @coupon_1.id)
+        @invoice1 = Invoice.create!(customer_id: (@customer1.id), merchant_id: @merchant_1.id, status: "packaged", coupon_id: @coupon_1.id)
        #@invoice2 = Invoice.create!(customer: @customer1.id, merchant: @merchant2.id, status: "shipped",coupon_id: coupon_1.id)
        
     end
@@ -166,7 +166,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             
 
         end
-        it "cannot deactive a coupon if tied to invoices" do
+        it "cannot deactive a coupon if tied to pending invoices" do
             patch "/api/v1/coupons/#{@coupon_1.id}/deactivate"
 
             json_response = JSON.parse(response.body, symbolize_names: true)

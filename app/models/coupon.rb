@@ -7,7 +7,6 @@ class Coupon < ApplicationRecord
     validates :description, presence: true
     validates :merchant_id, presence: true
     belongs_to :merchant
-    #belongs_to :invoice, optional: true
     has_many :invoices
 
     validate :merchant_coupon_limit, on: :create

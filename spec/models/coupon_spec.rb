@@ -6,27 +6,24 @@ describe Coupon, type: :model do
     it { should validate_presence_of :code }
     it { should validate_presence_of :discount }
     it { should validate_presence_of :description }
-    #it { should validate_inclusion_of(:active).in_array([true, false]) }
-    #it { should validate_inclusion_of(:percent_discount).in_array([true, false]) }
   end
 
   describe 'relationships' do
     it { should belong_to :merchant }
-    #it { should belong_to(:invoice).optional }
   end
 
   describe "merchant coupon limit tests" do
     before :each do
-        @merchant1=FactoryBot.create(:merchant)
-        @coupon = FactoryBot.create(:coupon, active: true, merchant_id: @merchant1.id)
-        coupons = FactoryBot.create_list(:coupon, 4, active: true, merchant_id: @merchant1.id)
-        customer1 = Customer.create!(first_name: "Papa", last_name: "Gino")
-        invoice_coupon1 = Invoice.create!(customer_id: (customer1.id), merchant_id: @merchant1.id, status: "packaged", coupon_id: @coupon.id)
-        invoice_coupon2 = Invoice.create!(customer_id: (customer1.id), merchant_id: @merchant1.id, status: "shipped", coupon_id: @coupon.id)
+        @merchant1=create(:merchant)
+        @coupon = create(:coupon, active: true, merchant_id: @merchant1.id)
+        coupons = create_list(:coupon, 4, active: true, merchant_id: @merchant1.id)
+        customer1 = create(:customer)
+        invoice_coupon1 = create(:invoice, customer_id: (customer1.id), merchant_id: @merchant1.id, status: "packaged", coupon_id: @coupon.id)
+        invoice_coupon2 = create(:invoice,customer_id: (customer1.id), merchant_id: @merchant1.id, status: "shipped", coupon_id: @coupon.id)
     end
 
     it "does not create another coupon" do
-        coupon = FactoryBot.build(:coupon, active: true, merchant_id: @merchant1.id)
+        coupon = build(:coupon, active: true, merchant_id: @merchant1.id)
     
         expect(coupon).not_to be_valid
         expect(coupon.errors[:base]).to include("Only 5 coupons can be active for one merchant")

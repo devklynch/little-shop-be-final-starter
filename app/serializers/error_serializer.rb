@@ -19,4 +19,11 @@ class ErrorSerializer
     errors: ["Cannot deactivate a coupon that's attached to invoices"]
   }
   end
+
+  def self.format_update_active_only
+    {
+      message: "Your query could not be completed",
+      errors: ["The active parameter is required to change the active status"]
+    }
+  end
 end

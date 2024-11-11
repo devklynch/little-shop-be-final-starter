@@ -80,15 +80,15 @@ describe "Merchant endpoints", :type => :request do
       first = Merchant.create!(name: "newer merchant")
       merchant = Merchant.create!(name: "Merchant Invoices")
       customer = Customer.create!(first_name: "John", last_name: "Doe")
-      coupon = FactoryBot.create(:coupon, active:true, merchant_id: merchant.id)
-      coupon2 = FactoryBot.create(:coupon, active:true, merchant_id: merchant.id)
-      invoice_factory = FactoryBot.create_list(:invoice, 2,merchant: merchant)
+      coupon = create(:coupon, active:true, merchant_id: merchant.id)
+      coupon2 = create(:coupon, active:true, merchant_id: merchant.id)
+      invoice_factory = create_list(:invoice, 2,merchant: merchant)
       invoice_coupon = Invoice.create!(customer_id: customer.id, merchant_id: merchant.id, status: "shipped", coupon_id: coupon.id)
 
-      get "/api/v1/merchants"
+      get api_v1_merchants_path
 
       merchants = JSON.parse(response.body, symbolize_names: true)
-      #binding.pry
+  
       expect(response).to have_http_status(:ok)
       expect(merchants[:data].count).to eq(2)
       expect(merchants[:data][0][:id]).to eq(first.id.to_s)

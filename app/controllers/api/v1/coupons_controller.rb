@@ -10,21 +10,20 @@ class Api::V1::CouponsController < ApplicationController
         render json: CouponSerializer.new(coupon), status: :created
     end
 
-    def activate
+    def update
         coupon = Coupon.find(params[:id])
-        coupon.update!(active: true)
-        render json: CouponSerializer.new(coupon)
-    end
+  
+        if params[:active].nil?
+            render json: ErrorSerializer.format_update_active_only, status: :bad_request
+            return
+        end
+        change_active_to = params[:active]
 
-    def deactivate
-        coupon = Coupon.find(params[:id])
-        coupon_id =coupon.id
-
-        if Coupon.attached_to_pending_invoice(coupon_id)
+        if change_active_to == "false" && Coupon.attached_to_pending_invoice(coupon.id)
             render json: ErrorSerializer.format_coupon_deactivation_response, status: :bad_request
         else
-        coupon.update!(active: false)
-        render json: CouponSerializer.new(coupon)
+            coupon.update!(active: change_active_to)
+            render json: CouponSerializer.new(coupon)
         end
     end
 
@@ -33,20 +32,4 @@ class Api::V1::CouponsController < ApplicationController
     def coupon_params
       params.permit(:name, :code, :discount, :active, :percent_discount, :description, :merchant_id)
     end
-
-    # def check_invoices
-    # invoice_error = {
-    #         # errors: [
-    #         #   {
-    #         #     status: "400",
-    #         #     message: "Cannot deactivate a coupon that's attached to invoices"
-    #         #   }
-    #         # ]
-    #         message: "Your query could not be completed",
-    #   errors: "Cannot deactivate a coupon that's attached to invoices"
-    #       }
-    #     if coupon.times_used >0
-    #         render json: invoice_error, status: :bad_request
-    #     end
-    # end
 end

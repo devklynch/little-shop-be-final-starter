@@ -8,8 +8,8 @@ RSpec.describe "Coupon endpoints" , :type => :request do
         @customer1 = Customer.create!(first_name: "Papa", last_name: "Gino")
         @customer2 = Customer.create!(first_name: "Jimmy", last_name: "John")
 
-        @coupon_1 = Coupon.create!(name: "Coupon 1", discount: 10, active: true, percent_discount: false, description: "Text text text", merchant_id: @merchant_1.id)
-        @coupon_2 = Coupon.create!(name: "Coupon 2", discount: 5, active: true, percent_discount: true, description: "Text text text",  merchant_id: @merchant_2.id)
+        @coupon_1 = Coupon.create!(name: "Coupon 1", code: "BOGO50", discount: 10, active: true, percent_discount: false, description: "Text text text", merchant_id: @merchant_1.id)
+        @coupon_2 = Coupon.create!(name: "Coupon 2", code: "10Off", discount: 5, active: true, percent_discount: true, description: "Text text text",  merchant_id: @merchant_2.id)
 
         @invoice1 = Invoice.create!(customer_id: (@customer1.id), merchant_id: @merchant_1.id, status: "packaged", coupon_id: @coupon_1.id)
        #@invoice2 = Invoice.create!(customer: @customer1.id, merchant: @merchant2.id, status: "shipped",coupon_id: coupon_1.id)
@@ -34,6 +34,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             expect(coupon[:data][:type]).to eq("coupon")
 
             expect(coupon[:data][:attributes][:name]).to eq(@coupon_1.name)
+            expect(coupon[:data][:attributes][:code]).to eq(@coupon_1.code)
             expect(coupon[:data][:attributes][:discount]).to eq(@coupon_1.discount)
             expect(coupon[:data][:attributes][:active]).to eq(@coupon_1.active)
             expect(coupon[:data][:attributes][:percent_discount]).to eq(@coupon_1.percent_discount)
@@ -56,7 +57,8 @@ RSpec.describe "Coupon endpoints" , :type => :request do
 
     describe "Coupon create" do
         it "can create a new coupon for a merchant" do
-            name = "10off"
+            name ="Discount on Items"
+            code = "10for10"
             discount = 10
             active = true
             percent_discount = false
@@ -65,6 +67,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
 
             body = {
                 name: name,
+                code: code,
                 discount: discount,
                 active: active,
                 percent_discount: percent_discount,
@@ -83,8 +86,9 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             expect(coupon[:data][:attributes][:merchant_id]).to eq(merchant_id)
         end
 
-        it "cannot create an coupon with a non-unique name" do
+        it "cannot create an coupon with a non-unique code" do
             name = "Coupon 1"
+            code ="BOGO50"
             discount = 10
             active = true
             percent_discount = false
@@ -93,6 +97,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
 
             body = {
                 name: name,
+                code: code,
                 discount: discount,
                 active: active,
                 percent_discount: percent_discount,
@@ -104,10 +109,11 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             json = JSON.parse(response.body, symbolize_names: true)
             expect(response.status). to eq(422)
             expect(json[:message]).to eq("Your query could not be completed")
-            expect(json[:errors]).to eq(["Validation failed: Name has already been taken"])
+            expect(json[:errors]).to eq(["Validation failed: Code has already been taken"])
         end
         it "cannot create an coupon with missing fields" do
             name = "Coupon Test"
+            code = "1234"
             active = true
             percent_discount = false
             description = "10 off your order"
@@ -115,6 +121,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
 
             body = {
                 name: name,
+                code: code,
                 active: active,
                 percent_discount: percent_discount,
                 description: description,
@@ -130,7 +137,8 @@ RSpec.describe "Coupon endpoints" , :type => :request do
 
         it "cannot create an active coupon if the merchant already has 5 active" do
             coupons = FactoryBot.create_list(:coupon, 4, active: true, merchant_id: @merchant_1.id)
-            name = "BOGO50"
+            name = "Big sale"
+            code = "Sale123"
             discount = 5
             active = true
             percent_discount = true
@@ -139,6 +147,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
 
             body = {
                 name: name,
+                code: code,
                 discount: discount,
                 active: active,
                 percent_discount: percent_discount,
@@ -173,7 +182,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             #binding.pry
             expect(response.status).to eq(400)
             expect(json_response[:message]).to eq("Your query could not be completed")
-            expect(json_response[:errors]).to eq("Cannot deactivate a coupon that's attached to invoices")
+            expect(json_response[:errors]).to eq(["Cannot deactivate a coupon that's attached to invoices"])
         end
 
         it "cannot deactivate a coupon that doesn't exist" do

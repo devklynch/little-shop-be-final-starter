@@ -1,5 +1,6 @@
 class Coupon < ApplicationRecord
-    validates :name, presence: true, uniqueness: true
+    validates :code, presence: true, uniqueness: true
+    validates :name, presence: true
     validates :discount, presence: true, numericality: true
     validates :active, inclusion: { in: [true,false]}
     validates :percent_discount, inclusion: { in: [true,false]}
@@ -18,7 +19,7 @@ class Coupon < ApplicationRecord
         end
     end
 
-    def self.check_current_invoices(coupon_id)
-        joins(:invoices).where("coupon_id = ? AND status = ?", coupon_id,"packaged").count
+    def self.attached_to_pending_invoice(coupon_id)
+         (joins(:invoices).where("coupon_id = ? AND status = ?", coupon_id,"packaged").count) >0
     end
 end

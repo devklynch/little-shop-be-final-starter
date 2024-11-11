@@ -3,6 +3,7 @@ require 'rails_helper'
 describe Coupon, type: :model do
   describe 'validations' do
     it { should validate_presence_of :name }
+    it { should validate_presence_of :code }
     it { should validate_presence_of :discount }
     it { should validate_presence_of :description }
     #it { should validate_inclusion_of(:active).in_array([true, false]) }
@@ -32,7 +33,7 @@ describe Coupon, type: :model do
     end
 
     it "can check how many invoices are associated with a packaged invoice" do
-        expect(Coupon.check_current_invoices(@coupon.id)).to eq(1)
+        expect(Coupon.attached_to_pending_invoice(@coupon.id)).to eq(true)
     end
   end
 end

@@ -68,12 +68,25 @@ RSpec.describe "Merchant invoices endpoints" do
     get "/api/v1/merchants/#{merchant.id}/invoices"
 
     invoices = JSON.parse(response.body, symbolize_names: true)
-    #binding.pry
+ 
     expect(response).to be_successful
     expect(invoices[:data][0][:attributes][:coupon_id]).to eq(nil)
     expect(invoices[:data][1][:attributes][:coupon_id]).to eq(nil)
     expect(invoices[:data][2][:attributes][:coupon_id]).to eq(coupon.id)
   end
+  #if I need to show invoice creation failing
+  # it "has to match merchant ids" do
+  #   merchant = Merchant.create!(name: "Merchant Invoices")
+  #   merchant2 = Merchant.create!(name: "Merchant Invoices2")
+  #   coupon = FactoryBot.create(:coupon, active:true, merchant_id: merchant2.id)
+  #   coupon2 = FactoryBot.create(:coupon, active:true, merchant_id: merchant.id)
+  #   invoice_factory = FactoryBot.create_list(:invoice, 2,merchant: merchant)
+  #   invoice_coupon = Invoice.create!(customer_id: (@customer1.id), merchant_id: merchant.id, status: "shipped", coupon_id: coupon.id)
+  #   binding.pry
+  #   json = JSON.parse(response.body, symbolize_names: true)
+  #   expect(response).to be_successful
+
+  # end
 
 
 end

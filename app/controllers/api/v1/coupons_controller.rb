@@ -1,7 +1,6 @@
 class Api::V1::CouponsController < ApplicationController
     def show
         coupon = Coupon.find(params[:id])
-    
         render json: CouponSerializer.new(coupon, params: {id: params[:id]}), status: :ok  
     end
 

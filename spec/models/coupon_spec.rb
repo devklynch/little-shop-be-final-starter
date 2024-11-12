@@ -32,5 +32,11 @@ describe Coupon, type: :model do
     it "can check how many invoices are associated with a packaged invoice" do
         expect(Coupon.attached_to_pending_invoice(@coupon.id)).to eq(true)
     end
+
+    it "cannot create a percent_discount coupon with a discount value greater than 100" do
+      coupon = build(:coupon, percent_discount: true, discount: 120)
+      expect(coupon).not_to be_valid
+      expect(coupon.errors[:base]).to include("Percent discount cannot exceed 100")
+    end
   end
 end

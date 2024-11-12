@@ -2,7 +2,7 @@ class MerchantSerializer
   include JSONAPI::Serializer
   attributes :name
   attribute :coupons_count do |merchant|
-    merchant.coupons.size
+    merchant.coupons.count
   end
   attribute :invoice_coupon_count do |merchant|
     merchant.invoices.where("coupon_id IS NOT NULL").count

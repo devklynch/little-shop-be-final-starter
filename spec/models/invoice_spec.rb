@@ -5,20 +5,13 @@ RSpec.describe Invoice do
   it { should belong_to :customer }
   it { should validate_inclusion_of(:status).in_array(%w(shipped packaged returned)) }
 
-  describe "Invoice class models" do
-    it "can count the invoices that use a specific coupon" do
+  it "can only have a coupon added if they belong to the same merchant" do
     merchant = Merchant.create!(name: "Merchant Invoices")
-    customer1 = Customer.create!(first_name: "Papa", last_name: "Gino")
-    coupon1 = FactoryBot.create(:coupon, active:true, merchant_id: merchant.id)
-    coupon2 = FactoryBot.create(:coupon, active:true, merchant_id: merchant.id)
-    invoice_factory = FactoryBot.create_list(:invoice, 2,merchant: merchant)
-    invoice_coupon = Invoice.create!(customer_id: (customer1.id), merchant_id: merchant.id, status: "shipped", coupon_id: coupon1.id)
-    invoice_coupon2 = Invoice.create!(customer_id: (customer1.id), merchant_id: merchant.id, status: "shipped", coupon_id: coupon2.id)
-    invoice_coupon3 = Invoice.create!(customer_id: (customer1.id), merchant_id: merchant.id, status: "shipped", coupon_id: coupon2.id)
-    
-    expect(Invoice.coupon_count(coupon1.id)).to eq(1)
-    expect(Invoice.coupon_count(coupon2.id)).to eq(2)
-    end
+    merchant2 = Merchant.create!(name: "Merchant Invoices2")
+    coupon = FactoryBot.create(:coupon, active:true, merchant_id: merchant2.id)
+    invoice_coupon = build(:invoice, customer: @customer1, merchant_id: merchant.id, status: "shipped", coupon_id: coupon.id)
 
+    expect(invoice_coupon).not_to be_valid
+    expect(invoice_coupon.errors[:base]).to include("Invoice and coupon must belong to the same merchant")
   end
 end

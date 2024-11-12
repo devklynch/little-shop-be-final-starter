@@ -2,24 +2,21 @@ require "rails_helper"
 
 RSpec.describe "Coupon endpoints" , :type => :request do
     before :each do
-        @merchant_1 = Merchant.create!(name: "Merchant 1")
-        @merchant_2 = Merchant.create!(name: "Merchant 2")
+        @merchant_1 = create(:merchant)
+        @merchant_2 = create(:merchant)
 
-        @customer1 = Customer.create!(first_name: "Papa", last_name: "Gino")
-        @customer2 = Customer.create!(first_name: "Jimmy", last_name: "John")
+        @customer1 = create(:customer)
+        @customer2 = create(:customer)
 
-        @coupon_1 = Coupon.create!(name: "Coupon 1", discount: 10, active: true, percent_discount: false, description: "Text text text", merchant_id: @merchant_1.id)
-        @coupon_2 = Coupon.create!(name: "Coupon 2", discount: 5, active: true, percent_discount: true, description: "Text text text",  merchant_id: @merchant_2.id)
+        @coupon_1 = create(:coupon, code: "BOGO50", active: true, merchant_id: @merchant_1.id)
+        @coupon_2 = create(:coupon, active: true, merchant_id: @merchant_2.id)
 
-        @invoice1 = Invoice.create!(customer_id: (@customer1.id), merchant_id: @merchant_1.id, status: "shipped", coupon_id: @coupon_1.id)
-       #@invoice2 = Invoice.create!(customer: @customer1.id, merchant: @merchant2.id, status: "shipped",coupon_id: coupon_1.id)
-       
+        @invoice1 = create(:invoice, customer_id: @customer1.id, merchant_id: @merchant_1.id, status: "packaged", coupon_id: @coupon_1.id)
     end
 
     describe "Coupon show" do
         it "should show a coupon and it's attributes" do
-            #get api_v1_coupons_path(@coupon_1)
-            get "/api/v1/coupons/#{@coupon_1.id}"
+            get api_v1_coupon_path(@coupon_1)
 
             coupon = JSON.parse(response.body, symbolize_names: true)
             
@@ -34,6 +31,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             expect(coupon[:data][:type]).to eq("coupon")
 
             expect(coupon[:data][:attributes][:name]).to eq(@coupon_1.name)
+            expect(coupon[:data][:attributes][:code]).to eq(@coupon_1.code)
             expect(coupon[:data][:attributes][:discount]).to eq(@coupon_1.discount)
             expect(coupon[:data][:attributes][:active]).to eq(@coupon_1.active)
             expect(coupon[:data][:attributes][:percent_discount]).to eq(@coupon_1.percent_discount)
@@ -43,8 +41,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
         end
 
         it "should give an error if item number doesnt exist" do
-            #get api_v1_coupons_path(1)
-            get "/api/v1/coupons/9999"
+            get api_v1_coupon_path(9999)
 
             json_response = JSON.parse(response.body, symbolize_names: true)
            
@@ -56,7 +53,8 @@ RSpec.describe "Coupon endpoints" , :type => :request do
 
     describe "Coupon create" do
         it "can create a new coupon for a merchant" do
-            name = "10off"
+            name ="Discount on Items"
+            code = "10for10"
             discount = 10
             active = true
             percent_discount = false
@@ -65,16 +63,17 @@ RSpec.describe "Coupon endpoints" , :type => :request do
 
             body = {
                 name: name,
+                code: code,
                 discount: discount,
                 active: active,
                 percent_discount: percent_discount,
                 description: description,
                 merchant_id: merchant_id
             }
+            post api_v1_coupons_path,params: body, as: :json
 
-            post "/api/v1/coupons", params: body, as: :json
             coupon = JSON.parse(response.body, symbolize_names: true)
-            #binding.pry
+
             expect(response).to have_http_status(:created)
             expect(coupon[:data][:attributes][:name]).to eq(name)
             expect(coupon[:data][:attributes][:discount]).to eq(discount)
@@ -83,8 +82,9 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             expect(coupon[:data][:attributes][:merchant_id]).to eq(merchant_id)
         end
 
-        it "cannot create an coupon with a non-unique name" do
+        it "cannot create an coupon with a non-unique code" do
             name = "Coupon 1"
+            code ="BOGO50"
             discount = 10
             active = true
             percent_discount = false
@@ -93,6 +93,7 @@ RSpec.describe "Coupon endpoints" , :type => :request do
 
             body = {
                 name: name,
+                code: code,
                 discount: discount,
                 active: active,
                 percent_discount: percent_discount,
@@ -100,14 +101,16 @@ RSpec.describe "Coupon endpoints" , :type => :request do
                 merchant_id: merchant_id
             }
 
-            post "/api/v1/coupons", params: body, as: :json
+            post api_v1_coupons_path,params: body, as: :json
+
             json = JSON.parse(response.body, symbolize_names: true)
             expect(response.status). to eq(422)
             expect(json[:message]).to eq("Your query could not be completed")
-            expect(json[:errors]).to eq(["Validation failed: Name has already been taken"])
+            expect(json[:errors]).to eq(["Validation failed: Code has already been taken"])
         end
         it "cannot create an coupon with missing fields" do
             name = "Coupon Test"
+            code = "1234"
             active = true
             percent_discount = false
             description = "10 off your order"
@@ -115,13 +118,15 @@ RSpec.describe "Coupon endpoints" , :type => :request do
 
             body = {
                 name: name,
+                code: code,
                 active: active,
                 percent_discount: percent_discount,
                 description: description,
                 merchant_id: merchant_id
             }
 
-            post "/api/v1/coupons", params: body, as: :json
+            post api_v1_coupons_path,params: body, as: :json
+
             json = JSON.parse(response.body, symbolize_names: true)
             expect(response.status). to eq(422)
             expect(json[:message]).to eq("Your query could not be completed")
@@ -129,8 +134,9 @@ RSpec.describe "Coupon endpoints" , :type => :request do
         end
 
         it "cannot create an active coupon if the merchant already has 5 active" do
-            coupons = FactoryBot.create_list(:coupon, 4, active: true, merchant_id: @merchant_1.id)
-            name = "BOGO50"
+            coupons = create_list(:coupon, 4, active: true, merchant_id: @merchant_1.id)
+            name = "Big sale"
+            code = "Sale123"
             discount = 5
             active = true
             percent_discount = true
@@ -139,91 +145,95 @@ RSpec.describe "Coupon endpoints" , :type => :request do
 
             body = {
                 name: name,
+                code: code,
                 discount: discount,
                 active: active,
                 percent_discount: percent_discount,
                 description: description,
                 merchant_id: merchant_id
             }
-            post "/api/v1/coupons", params: body, as: :json
+            post api_v1_coupons_path,params: body, as: :json
+
             json = JSON.parse(response.body, symbolize_names: true)
             expect(response.status). to eq(422)
             expect(json[:message]).to eq("Your query could not be completed")
             expect(json[:errors]).to eq(["Validation failed: Only 5 coupons can be active for one merchant"])
-
         end
     end
 
     describe "Change coupon active status" do
         it "can deactivate a coupon if it has no invoices" do
-            patch "/api/v1/coupons/#{@coupon_2.id}/deactivate"
+            patch api_v1_coupon_path(@coupon_2, active: false)
 
             coupon = JSON.parse(response.body, symbolize_names: true)
-            #binding.pry
+ 
             expect(response.status).to eq(200)
             expect(coupon[:data][:id]).to eq(@coupon_2.id.to_s)
             expect(coupon[:data][:attributes][:active]).to eq(false)
-            
-
         end
-        it "cannot deactive a coupon if tied to invoices" do
-            patch "/api/v1/coupons/#{@coupon_1.id}/deactivate"
 
+        it "cannot deactive a coupon if tied to pending invoices" do
+            patch api_v1_coupon_path(@coupon_1, active: false)
+      
             json_response = JSON.parse(response.body, symbolize_names: true)
-            #binding.pry
+       
             expect(response.status).to eq(400)
             expect(json_response[:message]).to eq("Your query could not be completed")
-            expect(json_response[:errors]).to eq("Cannot deactivate a coupon that's attached to invoices")
+            expect(json_response[:errors]).to eq(["Cannot deactivate a coupon that's attached to invoices"])
         end
 
         it "cannot deactivate a coupon that doesn't exist" do
-
-            patch "/api/v1/coupons/99999/deactivate"
+            patch api_v1_coupon_path(99999, active: false)
 
             json_response = JSON.parse(response.body, symbolize_names: true)
 
-            #binding.pry
             expect(response.status).to eq(404)
             expect(json_response[:message]).to eq("Your query could not be completed")
             expect(json_response[:errors]).to eq(["Couldn't find Coupon with 'id'=99999"])
         end
 
         it "can activate a coupon" do
-            coupon_test = FactoryBot.create(:coupon, active: false, merchant_id: @merchant_1.id)
+            coupon_test = create(:coupon, active: false, merchant_id: @merchant_1.id)
 
-            patch "/api/v1/coupons/#{coupon_test.id}/activate"
+            patch api_v1_coupon_path(coupon_test, active: true)
 
             coupon = JSON.parse(response.body, symbolize_names: true)
-            #binding.pry
+      
             expect(response.status).to eq(200)
             expect(coupon[:data][:id]).to eq(coupon_test.id.to_s)
             expect(coupon[:data][:attributes][:active]).to eq(true)
         end
 
         it "cannot activate a coupon if there are already 5 active coupons for merchant" do
-            coupons = FactoryBot.create_list(:coupon, 4, active: true, merchant_id: @merchant_1.id)
-            coupon_test = FactoryBot.create(:coupon, active: false, merchant_id: @merchant_1.id)
+            coupons = create_list(:coupon, 4, active: true, merchant_id: @merchant_1.id)
+            coupon_test = create(:coupon, active: false, merchant_id: @merchant_1.id)
 
-            patch "/api/v1/coupons/#{coupon_test.id}/activate"
+            patch api_v1_coupon_path(coupon_test, active: true)
 
             json_response = JSON.parse(response.body, symbolize_names: true)
 
-            #binding.pry
             expect(response.status).to eq(422)
             expect(json_response[:message]).to eq("Your query could not be completed")
             expect(json_response[:errors]).to eq(["Validation failed: Only 5 coupons can be active for one merchant"])
         end
 
         it "cannot activate a coupon that doesn't exist" do
-
-            patch "/api/v1/coupons/99999/activate"
+            patch api_v1_coupon_path(99999, active: true)
 
             json_response = JSON.parse(response.body, symbolize_names: true)
 
-            #binding.pry
             expect(response.status).to eq(404)
             expect(json_response[:message]).to eq("Your query could not be completed")
             expect(json_response[:errors]).to eq(["Couldn't find Coupon with 'id'=99999"])
+        end
+
+        it "requires active to be in the query" do
+            patch api_v1_coupon_path(@coupon_2)
+
+            json_response = JSON.parse(response.body, symbolize_names: true)
+            expect(response.status).to eq(400)
+            expect(json_response[:message]).to eq("Your query could not be completed")
+            expect(json_response[:errors]).to eq(["The active parameter is required to change the active status"])
         end
     end
 end

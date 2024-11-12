@@ -12,4 +12,18 @@ class ErrorSerializer
       errors: ["invalid search params"] 
     }
   end
+  
+  def self.format_coupon_deactivation_response
+    {
+    message: "Your query could not be completed",
+    errors: ["Cannot deactivate a coupon that's attached to invoices"]
+  }
+  end
+
+  def self.format_update_active_only
+    {
+      message: "Your query could not be completed",
+      errors: ["The active parameter is required to change the active status"]
+    }
+  end
 end

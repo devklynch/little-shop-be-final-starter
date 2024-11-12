@@ -68,12 +68,10 @@ RSpec.describe "Merchant invoices endpoints" do
     get "/api/v1/merchants/#{merchant.id}/invoices"
 
     invoices = JSON.parse(response.body, symbolize_names: true)
-    #binding.pry
+ 
     expect(response).to be_successful
     expect(invoices[:data][0][:attributes][:coupon_id]).to eq(nil)
     expect(invoices[:data][1][:attributes][:coupon_id]).to eq(nil)
     expect(invoices[:data][2][:attributes][:coupon_id]).to eq(coupon.id)
   end
-
-
 end

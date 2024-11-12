@@ -35,8 +35,9 @@ describe Coupon, type: :model do
 
     it "cannot create a percent_discount coupon with a discount value greater than 100" do
       coupon = build(:coupon, percent_discount: true, discount: 120)
+   
       expect(coupon).not_to be_valid
-      expect(coupon.errors[:base]).to include("Percent discount cannot exceed 100")
+      expect(coupon.errors[:base]).to include("A percent discount coupon cannot exceed 100 in the discount")
     end
   end
 end

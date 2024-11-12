@@ -25,7 +25,7 @@ class Coupon < ApplicationRecord
 
     def percentage_coupon_limit
         if percent_discount && discount >100
-            errors.add(:base, "Percent discount cannot exceed 100")
+            errors.add(:base, "A percent discount coupon cannot exceed 100 in the discount")
         end
     end
 

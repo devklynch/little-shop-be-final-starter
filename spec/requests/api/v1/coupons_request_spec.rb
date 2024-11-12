@@ -159,6 +159,32 @@ RSpec.describe "Coupon endpoints" , :type => :request do
             expect(json[:message]).to eq("Your query could not be completed")
             expect(json[:errors]).to eq(["Validation failed: Only 5 coupons can be active for one merchant"])
         end
+        it "cannot create a percent_discount coupon with a discount greater  than 100" do
+            name = "Big sale"
+            code = "Sale123"
+            discount = 150
+            active = true
+            percent_discount = true
+            description = "10 off your order"
+            merchant_id = @merchant_1.id
+
+            body = {
+                name: name,
+                code: code,
+                discount: discount,
+                active: active,
+                percent_discount: percent_discount,
+                description: description,
+                merchant_id: merchant_id
+            }
+            post api_v1_coupons_path,params: body, as: :json
+
+            json = JSON.parse(response.body, symbolize_names: true)
+            expect(response.status). to eq(422)
+            expect(json[:message]).to eq("Your query could not be completed")
+            expect(json[:errors]).to eq(["Validation failed: A percent discount coupon cannot exceed 100 in the discount"])
+        end
+
     end
 
     describe "Change coupon active status" do
